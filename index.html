@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Campus Management - Theme Toggle</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      height: 100vh;
+      background-color: #ecf0f1;
+      color: #2c3e50;
+      overflow: hidden;
+      transition: background-color 0.3s ease;
+    }
+
+    body.dark-mode {
+      background-color: #1e272e;
+      color: #ecf0f1;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      height: 100%;
+      background-color: #2c3e50;
+      color: white;
+      padding-top: 60px;
+      position: fixed;
+      transition: background-color 0.3s ease;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .sidebar {
+      background-color: #111;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 15px 20px;
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      opacity: 0;
+      animation: fadeSlideIn 0.6s forwards;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: #34495e;
+      transform: translateX(10px);
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 250px;
+      padding: 40px;
+      flex-grow: 1;
+      opacity: 0;
+      animation: fadeIn 0.8s ease-out forwards;
+      transition: opacity 0.3s ease;
+      overflow-y: auto;
+    }
+
+    body.dark-mode .main-content {
+      color: #ecf0f1;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .main-content h1 {
+      font-size: 40px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .main-content p {
+      font-size: 22px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* Theme Toggle Icon */
+    .theme-icon {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 30px;
+      background-color: #2c3e50;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 1101;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .theme-icon:hover {
+      background-color: #34495e;
+      transform: rotate(20deg) scale(1.1);
+    }
+
+    /* Mobile Styles */
+    @media screen and (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .theme-icon {
+        top: 15px;
+        right: 15px;
+      }
+    }
+  </style>
+</head>
+<body class="light-mode">
+  
+  <!-- Theme Toggle Icon (Top-Right Corner) -->
+  <div class="theme-icon" onclick="toggleTheme()" id="themeToggle">🌙</div>
+
+  <!-- Sidebar Navigation -->
+  <div class="sidebar" id="sidebar">
+    <a onclick="goHome()">🏠 Home</a>
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a onclick="loadContent('hostel.html')">🏢 Hostel</a>
+    <a href="canteen.html">🍴 Canteen</a>
+    <a href="library.html">📚 Library</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="main-content">
+    <h1>Welcome to the Campus Management System</h1>
+    <p>Select a module from the sidebar to get started.</p>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    function loadContent(page) {
+      const mainContent = document.getElementById("main-content");
+      mainContent.style.opacity = 0;
+
+      fetch(page)
+        .then(response => response.text())
+        .then(data => {
+          setTimeout(() => {
+            mainContent.innerHTML = data;
+            mainContent.style.opacity = 1;
+          }, 200);
+        })
+        .catch(error => {
+          mainContent.innerHTML = '<p>Error loading page.</p>';
+          mainContent.style.opacity = 1;
+        });
+    }
+
+    function goHome() {
+      const mainContent = document.getElementById("main-content");
+      mainContent.style.opacity = 0;
+
+      setTimeout(() => {
+        mainContent.innerHTML = ` 
+          <h1>Welcome to the Campus Management System</h1>
+          <p>Select a module from the sidebar to get started.</p>
+        `;
+        mainContent.style.opacity = 1;
+      }, 200);
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark-mode");
+      document.body.classList.toggle("light-mode");
+
+      const icon = document.getElementById("themeToggle");
+      icon.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+    }
+
+    window.onload = function () {
+      goHome();
+    };
+  </script>
+</body>
+</html>

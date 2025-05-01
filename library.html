@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Library Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fc;
+      color: #333;
+    }
+    .sidebar {
+      width: 220px;
+      height: 100vh;
+      position: fixed;
+      padding-top: 30px;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar ul li {
+      padding: 15px;
+      cursor: pointer;
+    }
+    .sidebar ul li:hover {
+      background-color: #1e2a38;
+      color: white;
+    }
+    .container {
+      margin-left: 240px;
+      padding: 20px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .topbar input,
+    .topbar select {
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .book-card {
+      display: inline-block;
+      width: 200px;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .book-card img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    .user-info {
+      margin-top: 20px;
+      padding: 10px;
+      background: #e8f0fe;
+      border-radius: 5px;
+    }
+    .request-form {
+      margin-top: 30px;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .request-form h2 {
+      margin-bottom: 15px;
+    }
+    .request-form input,
+    .request-form textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .request-form button {
+      padding: 10px 20px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <ul>
+      <li onclick="showSection('all')">All Books</li>
+      <li onclick="filterSubject('CSE')">CSE Books (B.Tech, M.Tech)</li>
+      <li onclick="filterSubject('Nursing')">Nursing Books</li>
+      <li onclick="filterSubject('Law')">Law Books</li>
+      <li onclick="filterSubject('Radiology')">Radiology Books</li>
+      <li onclick="showSection('borrowed')">Borrowed Books</li>
+      <li onclick="showSection('overdue')">Overdue Books</li>
+      <li onclick="showSection('request')">Request Book</li>
+    </ul>
+  </div>
+
+  <div class="container">
+    <h1>Library Dashboard</h1>
+    <div class="topbar">
+      <input type="text" id="search" placeholder="Search books..." />
+      <select id="sort">
+        <option value="title">Sort by Title</option>
+        <option value="subject">Sort by Subject</option>
+        <option value="author">Sort by Author</option>
+      </select>
+    </div>
+
+    <div class="user-info">
+      <p><strong>User:</strong> Sudip Das</p>
+      <p><strong>ID:</strong> ST12345</p>
+    </div>
+
+    <div id="book-list">
+      <!-- Book cards will render here -->
+    </div>
+
+    <div class="request-form">
+      <h2>Request a New Book</h2>
+      <input type="text" id="requestTitle" placeholder="Book Title" />
+      <input type="text" id="requestAuthor" placeholder="Author Name" />
+      <textarea id="requestReason" placeholder="Why do you need this book?"></textarea>
+      <button onclick="submitRequest()">Submit Request</button>
+    </div>
+  </div>
+
+  <script>
+    const books = [
+      { title: "The Great Gatsby", author: "F. Scott Fitzgerald", subject: "Literature", imageUrl: "https://covers.openlibrary.org/b/id/10468241-L.jpg" },
+      { title: "1984", author: "George Orwell", subject: "Dystopian", imageUrl: "https://covers.openlibrary.org/b/id/8478694-L.jpg" },
+      { title: "Harry Potter", author: "J.K. Rowling", subject: "Fantasy", imageUrl: "https://covers.openlibrary.org/b/id/12337027-L.jpg" },
+      { title: "Computer Networks", author: "Andrew S. Tanenbaum", subject: "CSE", imageUrl: "https://covers.openlibrary.org/b/id/8231996-L.jpg" },
+      { title: "Operating Systems", author: "Abraham Silberschatz", subject: "CSE", imageUrl: "https://covers.openlibrary.org/b/id/11032725-L.jpg" },
+      { title: "Fundamentals of Nursing", author: "Patricia A. Potter", subject: "Nursing", imageUrl: "https://covers.openlibrary.org/b/id/10290291-L.jpg" },
+      { title: "Law of Torts", author: "R.K. Bangia", subject: "Law", imageUrl: "https://covers.openlibrary.org/b/id/9874691-L.jpg" },
+      { title: "Principles of Radiology", author: "Herring", subject: "Radiology", imageUrl: "https://covers.openlibrary.org/b/id/11244161-L.jpg" }
+    ];
+
+    function renderBooks(bookArray) {
+      const list = document.getElementById("book-list");
+      list.innerHTML = "";
+      bookArray.forEach(book => {
+        const card = document.createElement("div");
+        card.className = "book-card";
+        card.innerHTML = `
+          <img src="${book.imageUrl}" alt="${book.title}"
+               onerror="this.onerror=null;this.src='https://via.placeholder.com/200x250?text=No+Image';" />
+          <h3>${book.title}</h3>
+          <p>Author: ${book.author}</p>
+          <p>Subject: ${book.subject}</p>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    document.getElementById("sort").addEventListener("change", applyFilters);
+    document.getElementById("search").addEventListener("input", applyFilters);
+
+    function applyFilters() {
+      const value = document.getElementById("sort").value;
+      const query = document.getElementById("search").value.toLowerCase();
+      let filtered = books.filter(book => book.title.toLowerCase().includes(query));
+      if (value) {
+        filtered.sort((a, b) => a[value].localeCompare(b[value]));
+      }
+      renderBooks(filtered);
+    }
+
+    function showSection(section) {
+      alert(`Switching to: ${section} section`);
+    }
+
+    function filterSubject(subject) {
+      const filtered = books.filter(book => book.subject === subject);
+      renderBooks(filtered);
+    }
+
+    function submitRequest() {
+      const title = document.getElementById("requestTitle").value;
+      const author = document.getElementById("requestAuthor").value;
+      const reason = document.getElementById("requestReason").value;
+      if (title && author && reason) {
+        alert(`Request submitted for: ${title} by ${author}\nReason: ${reason}`);
+        document.getElementById("requestTitle").value = "";
+        document.getElementById("requestAuthor").value = "";
+        document.getElementById("requestReason").value = "";
+      } else {
+        alert("Please fill out all fields.");
+      }
+    }
+
+    // Initial render
+    applyFilters();
+  </script>
+</body>
+</html>

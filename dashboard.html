@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Attendance Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #388E3C;
+    }
+
+    header h1 {
+      margin-bottom: 10px;
+    }
+
+    .header-content p {
+      font-size: 14px;
+      color: #f8f8f8;
+    }
+
+    .main-content {
+      padding: 20px;
+    }
+
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .filters input, .filters select {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      width: 200px;
+      font-size: 14px;
+    }
+
+    .filters select {
+      width: auto;
+    }
+
+    .section-header {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #388E3C;
+      padding-left: 10px;
+      border-left: 5px solid #4CAF50;
+    }
+
+    .summary-cards {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 22%;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card h2 {
+      margin-bottom: 15px;
+      font-size: 18px;
+      color: #388E3C;
+    }
+
+    .card p {
+      font-size: 20px;
+      font-weight: bold;
+      color: #4CAF50;
+    }
+
+    .charts {
+      display: flex;
+      gap: 20px;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    .recent-log {
+      width: 100%;
+      margin-top: 30px;
+    }
+
+    .recent-log table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .recent-log th, .recent-log td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+
+    .recent-log th {
+      background-color: #388E3C;
+      color: white;
+    }
+
+    .recent-log td button {
+      padding: 5px 10px;
+      border-radius: 5px;
+      background-color: #FF6347;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .recent-log td button:hover {
+      background-color: #FF4500;
+    }
+
+    footer {
+      background-color: #222;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    footer p {
+      margin: 0;
+    }
+
+    #date-time {
+      font-size: 14px;
+      color: #ddd;
+    }
+
+    #attendance-overview {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    #attendance-chart {
+      width: 1000px !important;
+      height: 600px !important;
+    }
+
+    #attendance-pie {
+      max-width: 300px;
+      max-height: 300px;
+      margin-left: 200px;
+    }
+   #attendance-pie-chart h1{
+      color: #388E3C;
+   }
+    @media (max-width: 768px) {
+      .summary-cards {
+        flex-direction: column;
+      }
+
+      .card {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .charts {
+        flex-direction: column;
+      }
+
+      .filters {
+        flex-direction: column;
+      }
+
+      .filters input, .filters select {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>Student Attendance Dashboard</h1>
+      <p id="date-time"></p>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <!-- Filter section -->
+    <div class="filters">
+      <input type="date" id="attendance-date" />
+      <select id="class-filter">
+        <option value="all">All Classes</option>
+        <option value="class-1">Class 1</option>
+        <option value="class-2">Class 2</option>
+        <option value="class-3">Class 3</option>
+      </select>
+    </div>
+
+    <!-- Section Header -->
+    <h2 class="section-header">Total Attendance Overview</h2>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="card">
+        <h2>Total Students</h2>
+        <p id="total-students">500</p>
+      </div>
+      <div class="card">
+        <h2>Total Present Today</h2>
+        <p id="total-present">450</p>
+      </div>
+      <div class="card">
+        <h2>Total Absent Today</h2>
+        <p id="total-absent">50</p>
+      </div>
+      <div class="card">
+        <h2>Attendance This Month</h2>
+        <p id="attendance-percentage">90%</p>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <h2 class="section-header">Attendance Charts</h2>
+    <div class="charts">
+      <div id="attendance-overview">
+        <canvas id="attendance-chart"></canvas>
+      </div>
+      <div id="attendance-pie-chart">
+        <h1>Attendance view in Diagram </h1>
+        <canvas id="attendance-pie"></canvas>
+      </div>
+    </div>
+
+    <!-- Recent Log Section -->
+    <h2 class="section-header">Recent Attendance Log</h2>
+    <div class="recent-log">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Roll No.</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="attendance-log">
+          <!-- Dynamic rows will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    function updateDateTime() {
+      const now = new Date();
+      const dateString = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+      document.getElementById('date-time').textContent = dateString;
+    }
+
+    let attendanceData = [
+      { name: 'John Doe', rollNo: '001', status: 'Present', date: '2025-05-01', class: 'class-1' },
+      { name: 'Jane Smith', rollNo: '002', status: 'Absent', date: '2025-05-01', class: 'class-1' },
+      { name: 'Tom Brown', rollNo: '003', status: 'Present', date: '2025-05-01', class: 'class-2' },
+      { name: 'Emily White', rollNo: '004', status: 'Absent', date: '2025-05-01', class: 'class-3' },
+    ];
+
+    function filterAttendance() {
+      const selectedDate = document.getElementById('attendance-date').value;
+      const selectedClass = document.getElementById('class-filter').value;
+
+      const filteredData = attendanceData.filter((entry) => {
+        const isDateMatch = !selectedDate || entry.date === selectedDate;
+        const isClassMatch = selectedClass === 'all' || entry.class === selectedClass;
+        return isDateMatch && isClassMatch;
+      });
+
+      updateAttendanceLog(filteredData);
+    }
+
+    function updateAttendanceLog(data) {
+      const logTable = document.getElementById('attendance-log');
+      logTable.innerHTML = '';
+
+      data.forEach((entry) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${entry.name}</td>
+          <td>${entry.rollNo}</td>
+          <td>${entry.status}</td>
+          <td>${entry.date}</td>
+          <td><button onclick="toggleAttendance('${entry.rollNo}')">Toggle Status</button></td>
+        `;
+        logTable.appendChild(row);
+      });
+    }
+
+    function toggleAttendance(rollNo) {
+      const entry = attendanceData.find((e) => e.rollNo === rollNo);
+      entry.status = entry.status === 'Present' ? 'Absent' : 'Present';
+      filterAttendance();
+      updateCharts();
+    }
+
+    function initCharts() {
+      const ctx1 = document.getElementById('attendance-chart').getContext('2d');
+      const ctx2 = document.getElementById('attendance-pie').getContext('2d');
+
+      new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['May 1', 'May 2', 'May 3', 'May 4', 'May 5'],
+          datasets: [{
+            label: 'Attendance %',
+            data: [90, 85, 80, 95, 92],
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+
+      new Chart(ctx2, {
+        type: 'pie',
+        data: {
+          labels: ['Present', 'Absent'],
+          datasets: [{
+            data: [450, 50],
+            backgroundColor: ['#4CAF50', '#FF6347'],
+            borderWidth: 1
+          }]
+        }
+      });
+    }
+
+    function updateCharts() {
+      const presentCount = attendanceData.filter(entry => entry.status === 'Present').length;
+      const absentCount = attendanceData.length - presentCount;
+
+      const ctx2 = document.getElementById('attendance-pie').getContext('2d');
+      new Chart(ctx2, {
+        type: 'pie',
+        data: {
+          labels: ['Present', 'Absent'],
+          datasets: [{
+            data: [presentCount, absentCount],
+            backgroundColor: ['#4CAF50', '#FF6347'],
+            borderWidth: 1
+          }]
+        }
+      });
+    }
+
+    window.onload = function () {
+      updateDateTime();
+      setInterval(updateDateTime, 1000);
+      initCharts();
+      filterAttendance();
+
+      document.getElementById('attendance-date').addEventListener('change', filterAttendance);
+      document.getElementById('class-filter').addEventListener('change', filterAttendance);
+    };
+  </script>
+</body>
+</html>

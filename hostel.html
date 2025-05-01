@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hostel Module</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+      background-color: #f4f4f4;
+    }
+
+    .sidebar {
+      background: #2c3e50;
+      color: white;
+      padding: 1rem;
+      width: 180px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      display: block;
+      margin-bottom: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: #3498db;
+      border-radius: 5px;
+      padding: 0.5rem;
+    }
+
+    .badge {
+      margin-left: 8px;
+      font-size: 16px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .container {
+      margin-left: 180px;
+      padding: 2rem;
+      flex: 1;
+      background-color: #f4f4f4;
+      min-height: 100vh;
+      opacity: 0;
+      animation: fadeIn 1s forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .complaint-form {
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+      animation: fadeIn 1s forwards;
+    }
+
+    .complaint-form h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .complaint-form form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .complaint-form input,
+    .complaint-form textarea {
+      padding: 0.75rem;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .complaint-form input:focus,
+    .complaint-form textarea:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+    }
+
+    .complaint-form button {
+      padding: 0.75rem;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+
+    .complaint-form button:hover {
+      background-color: #2980b9;
+    }
+
+    .complaint-form button:active {
+      transform: scale(0.98);
+    }
+
+    .complaints-list {
+      margin-top: 2rem;
+      animation: fadeIn 1s forwards;
+    }
+
+    #complaintsContainer {
+      display: grid;
+      gap: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 1rem 0;
+    }
+
+    .complaint-card {
+      background: #fff;
+      padding: 1rem;
+      border-left: 5px solid #e67e22;
+      border-radius: 5px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+
+    .complaint-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      padding: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .form-feedback {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: -10px;
+      margin-bottom: 1rem;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <a href="index.html">🏠 Home</a>
+    <a href="#" id="hostelLink">🛏️ Hostel <span id="badge" class="badge hidden">🔔</span></a>
+  </div>
+
+  <div class="container">
+    <section class="complaint-form">
+      <h2>🛠️ Any Complaint Regarding Hostel? Describe the issue</h2>
+      <form id="complaintForm">
+        <input type="text" id="name" placeholder="Your Name" required />
+        <div id="nameFeedback" class="form-feedback"></div>
+        <input type="text" id="room" placeholder="Room No" required />
+        <div id="roomFeedback" class="form-feedback"></div>
+        <textarea id="issue" placeholder="Describe the issue" required></textarea>
+        <div id="issueFeedback" class="form-feedback"></div>
+        <button type="submit">Submit</button>
+      </form>
+    </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("complaintForm");
+      const complaintsContainer = document.getElementById("complaintsContainer");
+      const badge = document.getElementById("badge");
+
+      function loadComplaints() {
+        complaintsContainer.innerHTML = "";
+        const complaints = JSON.parse(localStorage.getItem("complaints")) || [];
+
+        // Show badge if complaints > 2
+        badge.classList.toggle("hidden", complaints.length <= 2);
+
+        complaints.forEach((c, index) => {
+          const div = document.createElement("div");
+          div.className = "complaint-card";
+          div.innerHTML = `
+            <strong>${c.name} (Room ${c.room})</strong>
+            <p>${c.issue}</p>
+            <button class="delete-btn" data-index="${index}">❌</button>
+          `;
+          complaintsContainer.appendChild(div);
+        });
+
+        // Add event listeners for delete buttons
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const index = e.target.getAttribute('data-index');
+            deleteComplaint(index);
+          });
+        });
+      }
+
+      function deleteComplaint(index) {
+        const complaints = JSON.parse(localStorage.getItem("complaints")) || [];
+        complaints.splice(index, 1);
+        localStorage.setItem("complaints", JSON.stringify(complaints));
+        loadComplaints();
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("name").value.trim();
+        const room = document.getElementById("room").value.trim();
+        const issue = document.getElementById("issue").value.trim();
+
+        // Clear previous feedback messages
+        document.getElementById("nameFeedback").textContent = '';
+        document.getElementById("roomFeedback").textContent = '';
+        document.getElementById("issueFeedback").textContent = '';
+
+        // Validation
+        if (!name || !room || !issue) {
+          if (!name) document.getElementById("nameFeedback").textContent = 'Name is required.';
+          if (!room) document.getElementById("roomFeedback").textContent = 'Room number is required.';
+          if (!issue) document.getElementById("issueFeedback").textContent = 'Issue description is required.';
+          return;
+        }
+
+        const complaint = { name, room, issue };
+        const complaints = JSON.parse(localStorage.getItem("complaints")) || [];
+        complaints.push(complaint);
+        localStorage.setItem("complaints", JSON.stringify(complaints));
+
+        form.reset();
+        loadComplaints();
+      });
+
+      loadComplaints();
+    });
+  </script>
+</body>
+</html>
